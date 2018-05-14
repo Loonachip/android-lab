@@ -46,8 +46,7 @@ public class MainActivity extends AppCompatActivity {
         ListView listview = (ListView) findViewById(R.id.listView);
         listview.setAdapter(this.adapter);
 
-        listview.setOnItemClickListener(new
-                AdapterView.OnItemClickListener() {
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> adapter, View view, int pos, long id)
                     {
@@ -59,6 +58,19 @@ public class MainActivity extends AppCompatActivity {
                         startActivityForResult(intencja, 2);
                     }
                 });
+        listview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                    @Override
+                    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                        TextView name = (TextView) view.findViewById(android.R.id.text1);
+                        Animal zwierz = db.pobierz(Integer.parseInt(name.getText().toString()));
+
+                        db.usun(String.valueOf(zwierz.get_id()));
+                        adapter.changeCursor(db.lista());
+                        adapter.notifyDataSetChanged();
+                        return true;
+                    }
+                });
+
     }
 
     @Override
@@ -71,20 +83,18 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int reqCode, int resCode, Intent data){
-        if(reqCode==1 && resCode==RESULT_OK){
+        if(reqCode > 0 && resCode==RESULT_OK) {
             Bundle extras = data.getExtras();
 
-            Animal nowy = (Animal)extras.get("nowy");
-            this.db.dodaj(nowy);
+            if (reqCode == 1) {
+                Animal nowy = (Animal) extras.get("nowy");
+                this.db.dodaj(nowy);
+            }
 
-            adapter.changeCursor(db.lista());
-            adapter.notifyDataSetChanged();
-        }
-        else if(reqCode==2 && resCode==RESULT_OK){
-            Bundle extras = data.getExtras();
-
-            Animal nowy = (Animal)extras.get("nowy");
-            this.db.aktualizuj(nowy);
+            else if (reqCode == 2) {
+                Animal edytowany = (Animal) extras.get("nowy");
+                this.db.aktualizuj(edytowany);
+            }
 
             adapter.changeCursor(db.lista());
             adapter.notifyDataSetChanged();
